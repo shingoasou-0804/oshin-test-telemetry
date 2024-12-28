@@ -1,0 +1,1 @@
+# oshin-test-telemetry
