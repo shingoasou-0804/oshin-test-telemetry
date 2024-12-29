@@ -1,0 +1,31 @@
+name: Build and Push Docker Image to Google Artifact Registry
+
+on:
+  push:
+    branches:
+      - '1-telemetry-flask'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+          workload_identity_provider: "projects/${{ secrets.WORKLOAD_IDENTITY_PROJECT_ID }}/locations/global/workloadIdentityPools/terraform-test-pool/providers/terraform-test-provider"
+          service_account: ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Build Docker Image
+        run: |
+          docker build --platform linux/amd64 -f ./Dockerfile -t us-central1-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/terraform-test-repo/oshin-test-telemetry:latest .
+    
+      - name: Push Docker Image to Artifact Registry
+        run: |
+          docker push us-central1-docker.pkg.dev/${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}/terraform-test-repo/oshin-test-telemetry:latest

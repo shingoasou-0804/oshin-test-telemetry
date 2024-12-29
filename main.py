@@ -10,9 +10,9 @@ from google.oauth2 import service_account
 
 
 load_dotenv(override=True)
-PROJECT_ID = os.environ.get("PROJECT_ID", "generative-ai-app-426413")
+PROJECT_ID = os.environ.get("PROJECT_ID", "oshin-laboratry")
 TOPIC_ID = os.environ.get("TOPIC_ID", "terraform-test-app-log-v2")
-SERVICE_ACCOUNT_FILE_PATH = os.environ.get("SERVICE_ACCOUNT_FILE_PATH", "service_account.json")
+SERVICE_ACCOUNT_FILE_PATH = os.environ.get("SERVICE_ACCOUNT_FILE_PATH", "oshin-laboratry.json")
 credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE_PATH)
 
 app = Flask(__name__)
