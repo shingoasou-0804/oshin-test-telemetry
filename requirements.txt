@@ -1,0 +1,12 @@
+Flask==3.0.3
+Flask-WTF==1.2.2
+google-auth
+google-cloud-pubsub==2.27.1
+gunicorn==22.0.0
+opentelemetry-api==1.29.0
+opentelemetry-exporter-gcp-trace==1.7.0
+opentelemetry-instrumentation-flask
+opentelemetry-propagator-gcp
+opentelemetry-sdk==1.29.0
+python-dotenv
+Werkzeug==3.0.3
