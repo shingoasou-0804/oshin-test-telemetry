@@ -5,13 +5,13 @@ on:
     branches:
       - '1-telemetry-flask'
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
     steps:
       - name: Checkout repository
