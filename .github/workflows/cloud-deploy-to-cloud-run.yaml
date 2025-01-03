@@ -40,7 +40,7 @@ jobs:
       - name: Render Templatised Config Manifests
         run: |-
           export PROJECT_ID="${{ secrets.PROJECT_ID }}"
-          export REGION="${{ var.REGION }}"
+          export REGION="us-central1"
           export APP="oshin_test_telemetry"
           export SHA="${{ GITHUB_SHA::7 }}"
           export SERVICE_ACCOUNT="${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}"
