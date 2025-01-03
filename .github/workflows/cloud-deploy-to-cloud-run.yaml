@@ -42,17 +42,17 @@ jobs:
           export PROJECT_ID="${{ secrets.PROJECT_ID }}"
           export REGION="us-central1"
           export APP="oshin_test_telemetry"
-          export SHA="${{ GITHUB_SHA::7 }}"
+          export SHA="${{ github.sha::7 }}"
           export SERVICE_ACCOUNT="${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}"
           for template in $(ls *.yaml); do envsubst < ${template} > ${template%%}.yaml ; done
       
       - name: Create Cloud Deploy delivery pipeline
         run: |-
-          gcloud deploy apply --file=cloud-deploy/cloud-deploy.yaml --region=${{ var.REGION }}
+          gcloud deploy apply --file=cloud-deploy/cloud-deploy.yaml --region=us-central1
       
       - name: Create Release Name
         run: |-
-          echo "RELEASE_NAME=oshin_test_telemetry-${{ GITHUB_SHA::7 }}-${{ GITHUB_RUN_NUMBER }}" >> ${{ GITHUB_ENV }}
+          echo "RELEASE_NAME=oshin_test_telemetry-${{ github.sha::7 }}-${{ GITHUB_RUN_NUMBER }}" >> ${{ GITHUB_ENV }}
       
       - name: Create Cloud Deploy release
         id: release
