@@ -1,0 +1,71 @@
+name: Cloud Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - '5-cloud-deploy-delivery-pipeline-github-actions'
+
+jobs:
+  deploy:
+    permissions:
+      contents: "read"
+      id-token: "write"
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/${{ secrets.WORKLOAD_IDENTITY_PROJECT_ID }}/locations/global/workloadIdentityPools/terraform-test-pool/providers/terraform-test-provider"
+          service_account: ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.PROJECT_ID }}
+      
+      - name: Docker Auth
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+      
+      - name: Buid and Push Docker Image, Container
+        run: |
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin_test_telemetry:${{ github.sha }} .
+          docker push us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin_test_telemetry:${{ github.sha }}
+      
+      - name: Render Templatised Config Manifests
+        run: |
+          export PROJECT_ID="${{ secrets.PROJECT_ID }}"
+          export REGION="${{ var.REGION }}"
+          export APP="oshin_test_telemetry"
+          export SHA="${{ GITHUB_SHA::7 }}"
+          export SERVICE_ACCOUNT="${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}"
+          for template in $(ls *.yaml); do envsubst < ${template} > ${template%%}.yaml ; done
+      
+      - name: Create Cloud Deploy delivery pipeline
+        run: |
+          gcloud deploy apply --file=cloud-deploy/cloud-deploy.yaml --region=${{ var.REGION }}
+      
+      - name: Create Release Name
+        run: |
+          echo "RELEASE_NAME=oshin_test_telemetry-${{ GITHUB_SHA::7 }}-${{ GITHUB_RUN_NUMBER }}" >> ${{ GITHUB_ENV }}
+      
+      - name: Create Cloud Deploy release
+        id: release
+        uses: google-github-actions/create-cloud-deploy-release@v0
+        with:
+          delivery-pipeline: "oshin_test_telemetry"
+          name: "oshin_test_telemetry-${{ GITHUB_SHA::7 }}-${{ GITHUB_RUN_NUMBER }}"
+          region: ${{ var.REGION }}
+          description: "Release for ${{ GITHUB_SHA::7 }}"
+          skaffold_file: "cloud-deploy/skaffold.yaml"
+          images: "app=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin_test_telemetry:${{ github.sha }}"
+      
+      - name: Report Cloud Deploy Release
+        run: |
+          echo "Create release ${{ steps.release.outputs.name }}"
+          echo "Release link ${{ steps.release.outputs.link }}"
