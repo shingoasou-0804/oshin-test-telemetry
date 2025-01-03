@@ -44,7 +44,7 @@ jobs:
           export APP="oshin_test_telemetry"
           export SHA="${GITHUB_SHA::7}"
           export SERVICE_ACCOUNT="${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}"
-          for template in $(ls *.yaml); do envsubst < ${template} > ${template%%}.yaml ; done
+          for template in $(ls cloud-deploy/*.yaml); do envsubst < ${template} > ${template%%}.yaml ; done
       
       - name: Create Cloud Deploy delivery pipeline
         run: |-
