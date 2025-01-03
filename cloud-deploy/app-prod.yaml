@@ -1,0 +1,20 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: oshin_test_telemetry-prod
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: "1"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      serviceAccountName: ${SERVICE_ACCOUNT}
+      containers:
+      - name: oshin_test_telemetry
+        image: us-central1-docker.pkg.dev/${PROJECT_ID}/terraform-test-repo/oshin_test_telemetry
+        env:
+          - name: "TARGET"
+            value: "Prod"
+          - name: "SHA"
+            value: "${SHA}"

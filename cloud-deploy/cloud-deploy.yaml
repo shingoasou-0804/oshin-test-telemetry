@@ -1,0 +1,27 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: oshin_test_telemetry
+description: Deployment pipeline for oshin_test_telemetry
+serialPipeline:
+  stages:
+    - targetId: stg
+      profiles: [stg]
+    - targetId: prod
+      profiles: [prod]
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: stg
+description: Staging target
+run:
+  location: projects/${PROJECT_ID}/locations/us-central1
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: prod
+description: Production target
+run:
+  location: projects/${PROJECT_ID}/locations/us-central1
