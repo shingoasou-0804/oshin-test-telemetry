@@ -1,15 +1,15 @@
 apiVersion: skaffold/v4beta7
 kind: Config
 metadata:
-  name: "${APP}"
+  name: oshin_test_telemetry
 deploy:
   cloudrun: {}
 profiles:
-  - name: "stg"
+  - name: stg
     manifests:
       rawYaml:
-        - "app-stg.yaml"
-  - name: "prod"
+        - app-stg.yaml
+  - name: prod
     manifests:
       rawYaml:
-        - "app-prod.yaml"
+        - app-prod.yaml
