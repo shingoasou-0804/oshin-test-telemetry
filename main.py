@@ -10,7 +10,7 @@ from google.oauth2 import service_account
 from opentelemetry import trace
 from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.propagate import set_global_propagator
+from opentelemetry.propagate import set_global_textmap
 from opentelemetry.propagators.cloud_trace_propagator import CloudTraceFormatPropagator
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -25,7 +25,7 @@ CLIENT_EMAIL = os.environ.get("CLIENT_EMAIL")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_X509_CERT_URL = os.environ.get("CLIENT_X509_CERT_URL")
 
-set_global_propagator(CloudTraceFormatPropagator())
+set_global_textmap(CloudTraceFormatPropagator())
 tracer_provider = TracerProvider()
 cloud_trace_exporter = CloudTraceSpanExporter()
 tracer_provider.add_span_processor(
