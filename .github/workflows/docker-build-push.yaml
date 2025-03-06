@@ -3,7 +3,7 @@ name: Build and Push Docker Image to Google Artifact Registry
 on:
   push:
     branches:
-      - '1-telemetry-flask'
+      - '5-cloud-deploy-delivery-pipeline-github-actions'
 
 permissions:
   contents: 'read'
