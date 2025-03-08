@@ -7,13 +7,6 @@ from dotenv import load_dotenv
 from flask import Flask
 from google.cloud import pubsub_v1
 from google.oauth2 import service_account
-from opentelemetry import trace
-from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-from opentelemetry.instrumentation.flask import FlaskInstrumentor
-from opentelemetry.propagate import set_global_textmap
-from opentelemetry.propagators.cloud_trace_propagator import CloudTraceFormatPropagator
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
 load_dotenv(override=True)
@@ -25,8 +18,6 @@ CLIENT_EMAIL = os.environ.get("CLIENT_EMAIL")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_X509_CERT_URL = os.environ.get("CLIENT_X509_CERT_URL")
 
-set_global_textmap(CloudTraceFormatPropagator())
-tracer_provider = TracerProvider()
 credentials = service_account.Credentials.from_service_account_info(
     {
         "type": "service_account",
@@ -43,17 +34,7 @@ credentials = service_account.Credentials.from_service_account_info(
     }
 )
 
-cloud_trace_exporter = CloudTraceSpanExporter(
-    project_id=PROJECT_ID
-)
-tracer_provider.add_span_processor(
-    BatchSpanProcessor(cloud_trace_exporter)
-)
-trace.set_tracer_provider(tracer_provider)
-tracer = trace.get_tracer(__name__)
-
 app = Flask(__name__)
-FlaskInstrumentor().instrument_app(app)
 publisher = pubsub_v1.PublisherClient(credentials=credentials)
 
 
@@ -61,8 +42,7 @@ publisher = pubsub_v1.PublisherClient(credentials=credentials)
 def publish():
     topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
     log_data = _get_log_data()
-    with tracer.start_as_current_span("publish"):
-        publisher.publish(topic_path, json.dumps(log_data).encode('utf-8'))
+    publisher.publish(topic_path, json.dumps(log_data).encode('utf-8'))
 
     return "OK"
 
