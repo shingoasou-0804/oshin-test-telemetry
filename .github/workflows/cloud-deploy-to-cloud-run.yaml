@@ -42,7 +42,7 @@ jobs:
           export PROJECT_ID="${{ secrets.PROJECT_ID }}"
           export REGION="${{ vars.REGION }}"
           export APP="oshin-test-telemetry"
-          export SHA="${GITHUB_SHA::7}"
+          export SHA="${{ github.sha }}"
           export SERVICE_ACCOUNT="${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_EMAIL }}"
           for template in $(ls cloud-deploy/*.yaml); do envsubst < ${template} > ${template%%}.yaml ; done
       
@@ -52,16 +52,16 @@ jobs:
       
       - name: Create Release Name
         run: |-
-          echo "RELEASE_NAME=oshin-test-telemetry-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}" >> ${GITHUB_ENV}
+          echo "RELEASE_NAME=oshin-test-telemetry-${{ github.sha }}-${{ github.run_number }}" >> ${GITHUB_ENV}
       
       - name: Create Cloud Deploy release
         id: release
         uses: google-github-actions/create-cloud-deploy-release@v0
         with:
           delivery_pipeline: "oshin-test-telemetry"
-          name: "oshin-test-telemetry-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}"
+          name: ${{ env.RELEASE_NAME }}
           region: ${{ vars.REGION }}
-          description: "Release for ${GITHUB_SHA::7}"
+          description: "Release for ${{ github.sha }}"
           skaffold_file: "cloud-deploy/skaffold.yaml"
           images: "app=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin-test-telemetry:${{ github.sha }}"
       
