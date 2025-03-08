@@ -1,7 +1,7 @@
 apiVersion: skaffold/v4beta7
 kind: Config
 metadata:
-  name: 'oshin_test_telemetry'
+  name: 'oshin-test-telemetry'
 deploy:
   cloudrun: {}
 profiles:
