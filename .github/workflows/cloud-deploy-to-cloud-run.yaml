@@ -62,7 +62,7 @@ jobs:
           name: ${{ env.RELEASE_NAME }}
           region: ${{ vars.REGION }}
           description: "Release for ${{ github.sha }}"
-          skaffold_file: "cloud-deploy/skaffold.yaml"
+          skaffold_file: "skaffold.yaml"
           images: "app=us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin-test-telemetry:${{ github.sha }}"
           source: "cloud-deploy"
       
