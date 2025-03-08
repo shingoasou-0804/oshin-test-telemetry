@@ -52,7 +52,8 @@ jobs:
       
       - name: Create Release Name
         run: |-
-          echo "RELEASE_NAME=oshin-test-telemetry-${{ github.sha }}-${{ github.run_number }}" >> ${GITHUB_ENV}
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7 | tr '[:upper:]' '[:lower:]')
+          echo "RELEASE_NAME=release-${SHORT_SHA}-${GITHUB_RUN_NUMBER}" >> ${GITHUB_ENV}
       
       - name: Create Cloud Deploy release
         id: release
