@@ -27,15 +27,6 @@ CLIENT_X509_CERT_URL = os.environ.get("CLIENT_X509_CERT_URL")
 
 set_global_textmap(CloudTraceFormatPropagator())
 tracer_provider = TracerProvider()
-cloud_trace_exporter = CloudTraceSpanExporter()
-tracer_provider.add_span_processor(
-    BatchSpanProcessor(cloud_trace_exporter)
-)
-trace.set_tracer_provider(tracer_provider)
-tracer = trace.get_tracer(__name__)
-
-app = Flask(__name__)
-FlaskInstrumentor().instrument_app(app)
 credentials = service_account.Credentials.from_service_account_info(
     {
         "type": "service_account",
@@ -51,6 +42,35 @@ credentials = service_account.Credentials.from_service_account_info(
         "universe_domain": "googleapis.com"
     }
 )
+
+credentials_dict = {
+    "type": "service_account",
+    "project_id": PROJECT_ID,
+    "private_key_id": PRIVATE_KEY_ID,
+    "private_key": PRIVATE_KEY,
+    "client_email": CLIENT_EMAIL,
+    "client_id": CLIENT_ID,
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": CLIENT_X509_CERT_URL,
+    "universe_domain": "googleapis.com"
+}
+with open("service_account.json", "w") as f:
+    json.dump(credentials_dict, f)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "service_account.json"
+
+cloud_trace_exporter = CloudTraceSpanExporter(
+    project_id=PROJECT_ID
+)
+tracer_provider.add_span_processor(
+    BatchSpanProcessor(cloud_trace_exporter)
+)
+trace.set_tracer_provider(tracer_provider)
+tracer = trace.get_tracer(__name__)
+
+app = Flask(__name__)
+FlaskInstrumentor().instrument_app(app)
 publisher = pubsub_v1.PublisherClient(credentials=credentials)
 
 
