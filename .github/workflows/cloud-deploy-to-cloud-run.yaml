@@ -58,7 +58,7 @@ jobs:
         id: release
         uses: google-github-actions/create-cloud-deploy-release@v0
         with:
-          delivery-pipeline: "oshin-test-telemetry"
+          delivery_pipeline: "oshin-test-telemetry"
           name: "oshin-test-telemetry-${GITHUB_SHA::7}-${GITHUB_RUN_NUMBER}"
           region: ${{ vars.REGION }}
           description: "Release for ${GITHUB_SHA::7}"

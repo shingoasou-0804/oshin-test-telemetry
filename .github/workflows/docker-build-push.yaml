@@ -35,4 +35,4 @@ jobs:
       - name: Push Docker Image to Artifact Registry
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev
-          docker push us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin_test_telemetry:latest
+          docker push us-central1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/terraform-test-repo/oshin-test-telemetry:latest
