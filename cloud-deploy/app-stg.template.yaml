@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: 'oshin-test-telemetry-stg'
+  name: '${APP}-stg'
 spec:
   template:
     metadata:
@@ -9,7 +9,7 @@ spec:
         autoscaling.knative.dev/maxScale: '1'
         run.googleapis.com/execution-environment: gen2
     spec:
-      serviceAccountName: ${SERVICE_ACCOUNT}
+      serviceAccountName: ${RUN_SERVICE_ACCOUNT}
       containers:
       - name: 'oshin-test-telemetry'
         image: 'app'
