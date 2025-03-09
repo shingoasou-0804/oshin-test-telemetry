@@ -66,7 +66,7 @@ publisher = pubsub_v1.PublisherClient(credentials=credentials)
 
 @app.route("/")
 def publish():
-    # topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
+    topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
     log_data = _get_log_data()
     with tracer.start_as_current_span("publish"):
         # publisher.publish(topic_path, json.dumps(log_data).encode('utf-8'))
