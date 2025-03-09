@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 from flask import Flask
 from google.cloud import pubsub_v1
 from google.oauth2 import service_account
+from opentelemetry import trace
+from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.propagate import set_global_textmap
+from opentelemetry.propagators.cloud_trace_propagator import CloudTraceFormatPropagator
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
 load_dotenv(override=True)
@@ -18,23 +25,42 @@ CLIENT_EMAIL = os.environ.get("CLIENT_EMAIL")
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_X509_CERT_URL = os.environ.get("CLIENT_X509_CERT_URL")
 
-app = Flask(__name__)
-
+credentials_dict = {
+    "type": "service_account",
+    "project_id": PROJECT_ID,
+    "private_key_id": PRIVATE_KEY_ID,
+    "private_key": PRIVATE_KEY,
+    "client_email": CLIENT_EMAIL,
+    "client_id": CLIENT_ID,
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": CLIENT_X509_CERT_URL,
+    "universe_domain": "googleapis.com"
+}
 credentials = service_account.Credentials.from_service_account_info(
-    {
-        "type": "service_account",
-        "project_id": PROJECT_ID,
-        "private_key_id": PRIVATE_KEY_ID,
-        "private_key": PRIVATE_KEY,
-        "client_email": CLIENT_EMAIL,
-        "client_id": CLIENT_ID,
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": CLIENT_X509_CERT_URL,
-        "universe_domain": "googleapis.com"
-    }
+    credentials_dict
 )
+
+with open("service_account.json", "w") as f:
+    json.dump(credentials_dict, f)
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "service_account.json"
+
+set_global_textmap(CloudTraceFormatPropagator())
+tracer_provider = TracerProvider()
+
+cloud_trace_exporter = CloudTraceSpanExporter(
+    project_id=PROJECT_ID
+)
+tracer_provider.add_span_processor(
+    BatchSpanProcessor(cloud_trace_exporter)
+)
+trace.set_tracer_provider(tracer_provider)
+tracer = trace.get_tracer(__name__)
+
+app = Flask(__name__)
+FlaskInstrumentor().instrument_app(app)
 publisher = pubsub_v1.PublisherClient(credentials=credentials)
 
 
@@ -42,7 +68,9 @@ publisher = pubsub_v1.PublisherClient(credentials=credentials)
 def publish():
     topic_path = publisher.topic_path(PROJECT_ID, TOPIC_ID)
     log_data = _get_log_data()
-    publisher.publish(topic_path, json.dumps(log_data).encode('utf-8'))
+    with tracer.start_as_current_span("publish"):
+        # publisher.publish(topic_path, json.dumps(log_data).encode('utf-8'))
+        print(log_data)
 
     return "OK"
 
